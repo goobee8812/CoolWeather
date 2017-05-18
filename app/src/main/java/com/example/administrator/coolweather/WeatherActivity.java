@@ -48,6 +48,7 @@ public class WeatherActivity extends AppCompatActivity {
     public SwipeRefreshLayout swipeRefresh;
     public DrawerLayout drawerLayout;
     private Button navButton;
+    private String weatherId;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -85,15 +86,16 @@ public class WeatherActivity extends AppCompatActivity {
         }else {
             loadBingPic();
         }
-        final String weatherId;
+
         if (weatherString != null){
             //有缓存的时候直接解析天气数据
             Weather weather = Utility.handleWeatherResponse(weatherString);
             weatherId = weather.basic.weatherId;
+            LogUtil.d("Weather---旧数据",weather.basic.cityName);
             showWeatherInfo(weather);
         }else {
             //无缓存直接访问服务器查询天气
-            LogUtil.d("------","search online");
+            LogUtil.d("lalalala","在此调用了查询");
             weatherId = getIntent().getStringExtra("weather_id");
             weatherLayout.setVisibility(View.VISIBLE);
             requestWeather(weatherId);
@@ -101,6 +103,13 @@ public class WeatherActivity extends AppCompatActivity {
         swipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
+                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(WeatherActivity.this);
+                String weatherString = prefs.getString("weather",null);
+                if (weatherString != null){
+                    //有缓存的时候直接解析天气数据
+                    Weather weather = Utility.handleWeatherResponse(weatherString);
+                    weatherId = weather.basic.weatherId;
+                }
                 requestWeather(weatherId);
             }
         });
@@ -146,7 +155,6 @@ public class WeatherActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 final String responseText = response.body().string();
-                LogUtil.d("------",responseText);
                 final Weather weather = Utility.handleWeatherResponse(responseText);
                 runOnUiThread(new Runnable() {
                     @Override
@@ -195,7 +203,6 @@ public class WeatherActivity extends AppCompatActivity {
         weatherInfoText.setText(weatherInfo);
         forecastLayout.removeAllViews();
         for(Forecast forecast: weather.forecastList){
-            LogUtil.d("--1-1-1-1-",forecast.date + forecast.more.info + forecast.temperature.max + forecast.temperature.min);
             View view = LayoutInflater.from(this).inflate(R.layout.forecast_item,forecastLayout,false);
             TextView dateText = (TextView)view.findViewById(R.id.date_text);
             TextView infoText = (TextView)view.findViewById(R.id.info_text);

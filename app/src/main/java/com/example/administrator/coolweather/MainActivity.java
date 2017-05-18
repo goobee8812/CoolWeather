@@ -6,6 +6,8 @@ import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
+import com.example.administrator.coolweather.util.LogUtil;
+
 public class MainActivity extends AppCompatActivity {
 
     @Override
@@ -15,9 +17,9 @@ public class MainActivity extends AppCompatActivity {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         if (prefs.getString("weather",null) != null){
             Intent intent = new Intent(this,WeatherActivity.class);
+            LogUtil.d("--MainActivity--",prefs.getString("weather",null));
             startActivity(intent);
             finish();
         }
-
     }
 }
